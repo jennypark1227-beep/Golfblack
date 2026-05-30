@@ -1,48 +1,58 @@
-// app/login/page.tsx
 'use client';
+
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase'; // 선생님 프로젝트의 supabase 연결 파일 경로에 맞게 수정하세요
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
+    setLoading(true);
+
+    // 핵심 수정 부분: options 객체(redirectTo 포함)를 완전히 삭제했습니다.
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      alert('로그인 실패: ' + error.message);
+      alert(`로그인 실패: ${error.message}`);
     } else {
-      alert('로그인 성공!');
-      router.push('/'); // 로그인 후 메인으로 이동
-      router.refresh(); // 레이아웃 새로고침
+      // 로그인 성공 시 메인 페이지로 이동
+      window.location.href = '/';
     }
+    setLoading(false);
   };
 
   return (
-    <div className="max-w-md mx-auto px-8 py-20">
-      <h1 className="text-3xl font-black mb-10 text-white">로그인</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input 
-          type="email" 
-          placeholder="이메일" 
-          className="w-full p-4 bg-[#1a1a1a] border border-white/10 text-white" 
-          onChange={(e) => setEmail(e.target.value)} 
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <h1 className="text-2xl font-bold mb-8">로그인</h1>
+      <form onSubmit={handleLogin} className="w-80 flex flex-col gap-4">
+        <input
+          type="email"
+          placeholder="이메일"
+          className="p-2 bg-gray-800 border border-gray-700 rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        <input 
-          type="password" 
-          placeholder="비밀번호" 
-          className="w-full p-4 bg-[#1a1a1a] border border-white/10 text-white" 
-          onChange={(e) => setPassword(e.target.value)} 
+        <input
+          type="password"
+          placeholder="비밀번호"
+          className="p-2 bg-gray-800 border border-gray-700 rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        <button type="submit" className="w-full bg-[#e67e22] text-white py-4 font-bold">
-          로그인 하기
+        <button
+          type="submit"
+          disabled={loading}
+          className="p-2 bg-[#e67e22] hover:bg-[#d35400] transition rounded font-bold"
+        >
+          {loading ? '로그인 중...' : '로그인 하기'}
         </button>
       </form>
     </div>
